@@ -24,13 +24,16 @@ async function showMessages(messages, expert1, expert2) {
       expert2Messages.appendChild(div);
     }
 
-    // Trigger fade-in
-    await sleep(100); // small delay before adding class
+    await sleep(100); // fade-in trigger
     div.classList.add('show');
-
     await sleep(400); // delay between messages
   }
 }
+
+// Automatically switch backend URL depending on environment
+const LOCAL_BACKEND = 'http://127.0.0.1:5000/debate';
+const RENDER_BACKEND = 'https://expertchatbots-backend.onrender.com/debate';
+const BACKEND_URL = window.location.hostname.includes('github.io') ? RENDER_BACKEND : LOCAL_BACKEND;
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -48,20 +51,25 @@ form.addEventListener('submit', async (e) => {
   expert2Name.textContent = expert2;
 
   try {
-    const response = await fetch('https://expertchatbots-backend.onrender.com', {
+    const response = await fetch(BACKEND_URL, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ topic, expert1, expert2 })
     });
 
-    const data = await response.json();
+    // Check if response is JSON
+    const text = await response.text();
+    if(!text || text[0] === '<') {
+      throw new Error('Received HTML instead of JSON. Check backend URL or endpoint.');
+    }
+    const data = JSON.parse(text);
 
     const messages = data.debate.split('\n\n');
     await showMessages(messages, expert1, expert2);
 
-    // Show chart after messages
+    // Render chart
     const ctx = document.getElementById('debateChart').getContext('2d');
-    if(chart) chart.destroy(); // remove old chart
+    if(chart) chart.destroy();
     chart = new Chart(ctx, {
       type: data.figure.type,
       data: {
