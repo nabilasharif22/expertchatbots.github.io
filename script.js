@@ -48,7 +48,7 @@ form.addEventListener('submit', async (e) => {
   expert2Name.textContent = expert2;
 
   try {
-    const response = await fetch('https://YOUR_RENDER_URL_HERE/debate', {
+    const response = await fetch('https://expertchatbots-backend.onrender.com', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ topic, expert1, expert2 })
