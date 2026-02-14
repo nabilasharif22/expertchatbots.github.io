@@ -97,3 +97,23 @@ form button {
 form button:hover {
   background-color: #d90429;
 }
+
+
+.chat-message {
+  margin: 0.5rem 0;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.5s ease;
+}
+
+/* Class to fade in messages */
+.chat-message.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#graph-panel {
+  transition: opacity 1s ease;
+}
