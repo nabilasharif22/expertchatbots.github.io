@@ -3,37 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Expert Chatbots</title>
+  <title>Expert Chatbots Debate</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  <div class="container">
+    <h1>Expert Chatbots Debate</h1>
 
-<header>Expert Chatbot Debates</header>
+    <!-- Form to select topic and experts -->
+    <form id="debate-form">
+      <input type="text" id="topic" placeholder="Enter topic" required>
+      <input type="text" id="expert1" placeholder="Expert 1 name" required>
+      <input type="text" id="expert2" placeholder="Expert 2 name" required>
+      <button type="submit">Start Debate</button>
+    </form>
 
-<main>
-  <div class="expert-chat" id="expert1-chat">
-    <h3 id="expert1-name">Expert 1</h3>
-    <div id="expert1-messages"></div>
+    <!-- Chat panels -->
+    <div class="chat-container">
+      <div class="chat-panel" id="expert1-panel">
+        <h3 id="expert1-name">Expert 1</h3>
+        <div id="expert1-messages"></div>
+      </div>
+
+      <div class="chat-panel" id="expert2-panel">
+        <h3 id="expert2-name">Expert 2</h3>
+        <div id="expert2-messages"></div>
+      </div>
+    </div>
+
+    <!-- Graph / Evidence panel -->
+    <div id="graph-panel">
+      <canvas id="debateChart"></canvas>
+    </div>
   </div>
 
-  <div class="graph-panel" id="graph-panel" style="opacity:0;">
-    <canvas id="debateChart" width="400" height="400"></canvas>
-  </div>
-
-  <div class="expert-chat" id="expert2-chat">
-    <h3 id="expert2-name">Expert 2</h3>
-    <div id="expert2-messages"></div>
-  </div>
-</main>
-
-<form id="debate-form">
-  <input type="text" id="topic" placeholder="Enter debate topic" required>
-  <input type="text" id="expert1" placeholder="Expert 1 name" required>
-  <input type="text" id="expert2" placeholder="Expert 2 name" required>
-  <button type="submit">Start Debate</button>
-</form>
-
-<script src="script.js"></script>
+  <!-- Script -->
+  <script src="script.js"></script>
 </body>
 </html>

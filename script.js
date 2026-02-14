@@ -11,7 +11,6 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Animate messages one by one
 async function showMessages(messages, expert1, expert2) {
   for (let msg of messages) {
     const div = document.createElement('div');
@@ -24,13 +23,12 @@ async function showMessages(messages, expert1, expert2) {
       expert2Messages.appendChild(div);
     }
 
-    await sleep(100); // fade-in trigger
+    await sleep(100);
     div.classList.add('show');
-    await sleep(400); // delay between messages
+    await sleep(400);
   }
 }
 
-// Automatically switch backend URL depending on environment
 const LOCAL_BACKEND = 'http://127.0.0.1:5000/debate';
 const RENDER_BACKEND = 'https://expertchatbots-backend.onrender.com/debate';
 const BACKEND_URL = window.location.hostname.includes('github.io') ? RENDER_BACKEND : LOCAL_BACKEND;
@@ -38,7 +36,7 @@ const BACKEND_URL = window.location.hostname.includes('github.io') ? RENDER_BACK
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  // Clear previous messages and hide chart
+  // Clear previous messages and chart
   expert1Messages.innerHTML = '';
   expert2Messages.innerHTML = '';
   graphPanel.style.opacity = 0;
@@ -50,6 +48,16 @@ form.addEventListener('submit', async (e) => {
   expert1Name.textContent = expert1;
   expert2Name.textContent = expert2;
 
+  // Loading indicator
+  const loading1 = document.createElement('div');
+  const loading2 = document.createElement('div');
+  loading1.textContent = "Thinking...";
+  loading2.textContent = "Thinking...";
+  loading1.className = "chat-loading";
+  loading2.className = "chat-loading";
+  expert1Messages.appendChild(loading1);
+  expert2Messages.appendChild(loading2);
+
   try {
     const response = await fetch(BACKEND_URL, {
       method: 'POST',
@@ -57,12 +65,15 @@ form.addEventListener('submit', async (e) => {
       body: JSON.stringify({ topic, expert1, expert2 })
     });
 
-    // Check if response is JSON
     const text = await response.text();
     if(!text || text[0] === '<') {
-      throw new Error('Received HTML instead of JSON. Check backend URL or endpoint.');
+      throw new Error('Received HTML instead of JSON. Check backend URL.');
     }
     const data = JSON.parse(text);
+
+    // Remove loading indicators
+    loading1.remove();
+    loading2.remove();
 
     const messages = data.debate.split('\n\n');
     await showMessages(messages, expert1, expert2);
@@ -75,7 +86,7 @@ form.addEventListener('submit', async (e) => {
       data: {
         labels: data.figure.labels,
         datasets: [{
-          label: 'Research Evidence',
+          label: 'Evidence',
           data: data.figure.values,
           backgroundColor: ['#2b2d42', '#ef233c']
         }]
@@ -87,10 +98,12 @@ form.addEventListener('submit', async (e) => {
       }
     });
 
-    // Fade in chart panel
     graphPanel.style.opacity = 1;
 
   } catch(err) {
     alert('Error fetching debate: ' + err.message);
+    // Remove loading indicators if error occurs
+    loading1.remove();
+    loading2.remove();
   }
 });
