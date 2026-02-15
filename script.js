@@ -85,10 +85,10 @@ form.addEventListener('submit', async (e) => {
     loading2.remove();
 
     // Handle both old format (debate string) and new format (exchanges array)
-    if (data.exchanges && Array.isArray(data.exchanges) && data.exchanges.length > 0) {
+    if (data.exchanges && Array.isArray(data.exchanges)) {
       // New format: exchanges array
       await showMessages(data.exchanges, expert1, expert2);
-    } else if (data.debate && typeof data.debate === 'string') {
+    } else if (data.debate) {
       // Old format: debate string - convert to exchanges
       const messages = data.debate.split('\n\n').filter(msg => msg.trim());
       const exchanges = messages.map((msg, idx) => ({
@@ -98,7 +98,7 @@ form.addEventListener('submit', async (e) => {
       }));
       await showMessages(exchanges, expert1, expert2);
     } else {
-      throw new Error('Invalid response format from server. Please check backend deployment.');
+      throw new Error('Invalid response format from server');
     }
       throw new Error('Invalid response format from server');
     }
