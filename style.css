@@ -118,20 +118,4 @@ button:hover {
   100% { content: '...'; }
 }
 
-/* Graph Panel */
-#graph-panel {
-  width: 100%;
-  max-width: 800px;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  transition: opacity 0.5s;
-  opacity: 0;
-}
 
-/* Chart Canvas */
-#debateChart {
-  width: 100% !important;
-  height: 400px !important;
-}
