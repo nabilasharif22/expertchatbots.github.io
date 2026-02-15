@@ -11,35 +11,44 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function showMessages(messages, expert1, expert2) {
-  for (let msg of messages) {
+async function showMessages(exchanges, expert1, expert2) {
+  for (let exchange of exchanges) {
     const div = document.createElement('div');
     div.className = 'chat-message';
-    div.textContent = msg;
+    div.textContent = exchange.statement;
 
-    if(msg.toLowerCase().includes(expert1.toLowerCase())) {
+    // Compare speaker names (case-insensitive)
+    if(exchange.speaker.toLowerCase() === expert1.toLowerCase()) {
       expert1Messages.appendChild(div);
-    } else {
+    } else if(exchange.speaker.toLowerCase() === expert2.toLowerCase()) {
       expert2Messages.appendChild(div);
+    } else {
+      // Fallback: alternate based on index
+      const allMessages = document.querySelectorAll('.chat-message');
+      if(allMessages.length % 2 === 0) {
+        expert1Messages.appendChild(div);
+      } else {
+        expert2Messages.appendChild(div);
+      }
     }
 
-    await sleep(100);
+    await sleep(200);
     div.classList.add('show');
-    await sleep(400);
+    await sleep(2000);
   }
 }
 
 const LOCAL_BACKEND = 'http://127.0.0.1:5000/debate';
 const RENDER_BACKEND = 'https://expertchatbots-backend.onrender.com/debate';
-const BACKEND_URL = window.location.hostname.includes('github.io') ? RENDER_BACKEND : LOCAL_BACKEND;
+// Always use Render backend for now (CORS issue with local development)
+const BACKEND_URL = RENDER_BACKEND;
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  // Clear previous messages and chart
+  // Clear previous messages
   expert1Messages.innerHTML = '';
   expert2Messages.innerHTML = '';
-  graphPanel.style.opacity = 0;
 
   const topic = document.getElementById('topic').value;
   const expert1 = document.getElementById('expert1').value;
@@ -62,43 +71,37 @@ form.addEventListener('submit', async (e) => {
     const response = await fetch(BACKEND_URL, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ topic, expert1, expert2 })
+      body: JSON.stringify({ topic, expert1, expert2, turns: 4 })
     });
 
-    const text = await response.text();
-    if(!text || text[0] === '<') {
-      throw new Error('Received HTML instead of JSON. Check backend URL.');
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
     }
-    const data = JSON.parse(text);
+
+    const data = await response.json();
 
     // Remove loading indicators
     loading1.remove();
     loading2.remove();
 
-    const messages = data.debate.split('\n\n');
-    await showMessages(messages, expert1, expert2);
-
-    // Render chart
-    const ctx = document.getElementById('debateChart').getContext('2d');
-    if(chart) chart.destroy();
-    chart = new Chart(ctx, {
-      type: data.figure.type,
-      data: {
-        labels: data.figure.labels,
-        datasets: [{
-          label: 'Evidence',
-          data: data.figure.values,
-          backgroundColor: ['#2b2d42', '#ef233c']
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
-
-    graphPanel.style.opacity = 1;
+    // Handle both old format (debate string) and new format (exchanges array)
+    if (data.exchanges && Array.isArray(data.exchanges) && data.exchanges.length > 0) {
+      // New format: exchanges array
+      await showMessages(data.exchanges, expert1, expert2);
+    } else if (data.debate && typeof data.debate === 'string') {
+      // Old format: debate string - convert to exchanges
+      const messages = data.debate.split('\n\n').filter(msg => msg.trim());
+      const exchanges = messages.map((msg, idx) => ({
+        speaker: idx % 2 === 0 ? expert1 : expert2,
+        statement: msg,
+        turn: Math.floor(idx / 2) + 1
+      }));
+      await showMessages(exchanges, expert1, expert2);
+    } else {
+      throw new Error('Invalid response format from server. Please check backend deployment.');
+    }
+      throw new Error('Invalid response format from server');
+    }
 
   } catch(err) {
     alert('Error fetching debate: ' + err.message);
