@@ -100,8 +100,6 @@ form.addEventListener('submit', async (e) => {
     } else {
       throw new Error('Invalid response format from server');
     }
-      throw new Error('Invalid response format from server');
-    }
 
   } catch(err) {
     alert('Error fetching debate: ' + err.message);
